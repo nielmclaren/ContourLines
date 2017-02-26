@@ -2,6 +2,9 @@
 int imageWidth;
 int imageHeight;
 int zoomScale;
+int inputHeight;
+
+float noiseOffset;
 
 PGraphics inputGraphics;
 PGraphics outputGraphics;
@@ -14,6 +17,7 @@ void setup() {
   imageWidth = 800;
   imageHeight = 800;
   zoomScale = 80;
+  inputHeight = 128;
 
   inputGraphics = createGraphics(imageWidth, imageHeight, P2D);
   outputGraphics = createGraphics(imageWidth, imageHeight, P2D);
@@ -26,9 +30,11 @@ void reset() {
   int seedX = 450;
   int seedY = 283;
 
+  noiseOffset = random(10000);
+
   noiseSeed(0);
 
-  drawInput(inputGraphics);
+  drawInput();
 
   outputGraphics.beginDraw();
   outputGraphics.background(0);
@@ -44,36 +50,36 @@ void draw() {
   image(zoomGraphics, imageWidth, 0);
 }
 
-void drawInput(PGraphics pg) {
+void drawInput() {
   color c;
   float noiseScale = 0.006;
-  float offset = random(10000) * noiseScale;
+  float offset = noiseOffset * noiseScale;
 
-  pg.beginDraw();
-  pg.loadPixels();
+  inputGraphics.beginDraw();
+  inputGraphics.loadPixels();
 
-  for (int x = 0; x < pg.width; x++) {
-    for (int y = 0; y < pg.height; y++) {
-      pg.pixels[y * pg.width + x] = color(255 * noise(x * noiseScale + offset, y * noiseScale + offset));
+  for (int x = 0; x < inputGraphics.width; x++) {
+    for (int y = 0; y < inputGraphics.height; y++) {
+      inputGraphics.pixels[y * inputGraphics.width + x] = color(255 * noise(x * noiseScale + offset, y * noiseScale + offset));
     }
   }
 
   FastBlurrer blurrer = new FastBlurrer(imageWidth, imageHeight, 5);
-  blurrer.blur(pg.pixels);
+  blurrer.blur(inputGraphics.pixels);
 
-  for (int x = 0; x < pg.width; x++) {
-    for (int y = 0; y < pg.height; y++) {
-      if (brightness(pg.pixels[y * pg.width + x]) > 128) {
+  for (int x = 0; x < inputGraphics.width; x++) {
+    for (int y = 0; y < inputGraphics.height; y++) {
+      if (brightness(inputGraphics.pixels[y * inputGraphics.width + x]) > inputHeight) {
         c = color(32);
       } else {
         c = color(0);
       }
-      pg.pixels[y * pg.width + x] = c;
+      inputGraphics.pixels[y * inputGraphics.width + x] = c;
     }
   }
 
-  pg.updatePixels();
-  pg.endDraw();
+  inputGraphics.updatePixels();
+  inputGraphics.endDraw();
 }
 
 void drawContourTo(PGraphics pg, int seedX, int seedY) {
@@ -312,6 +318,16 @@ void keyReleased() {
     case 'e':
       reset();
       break;
+
+    case 'j':
+      inputHeight += 8;
+      drawInput();
+      break;
+    case 'k':
+      inputHeight -= 8;
+      drawInput();
+      break;
+
     case 'r':
       save("render.png");
       break;
