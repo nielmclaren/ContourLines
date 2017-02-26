@@ -1,27 +1,22 @@
 
 int imageWidth;
 int imageHeight;
-int zoomScale;
 int inputHeight;
 
 float noiseOffset;
 
 PGraphics inputGraphics;
 PGraphics outputGraphics;
-PGraphics zoomGraphics;
 
 void setup() {
-  size(1600, 800, P2D);
-  noSmooth();
+  size(800, 800, P2D);
 
   imageWidth = 800;
   imageHeight = 800;
-  zoomScale = 80;
   inputHeight = 128;
 
   inputGraphics = createGraphics(imageWidth, imageHeight, P2D);
   outputGraphics = createGraphics(imageWidth, imageHeight, P2D);
-  zoomGraphics = createGraphics(imageWidth, imageHeight, P2D);
 
   reset();
 }
@@ -46,8 +41,6 @@ void draw() {
   blendMode(ADD);
   image(inputGraphics, 0, 0);
   image(outputGraphics, 0, 0);
-  blendMode(BLEND);
-  image(zoomGraphics, imageWidth, 0);
 }
 
 void drawInput() {
@@ -64,8 +57,8 @@ void drawInput() {
     }
   }
 
-  FastBlurrer blurrer = new FastBlurrer(imageWidth, imageHeight, 5);
-  blurrer.blur(inputGraphics.pixels);
+  FastBlurrer blurrer = new FastBlurrer(imageWidth, imageHeight, 50);
+  blurrer.blur(inputGraphics.pixels, 5);
 
   for (int x = 0; x < inputGraphics.width; x++) {
     for (int y = 0; y < inputGraphics.height; y++) {
@@ -291,28 +284,6 @@ color getColorInDirection(PGraphics pg, Pixel pixel, int dir) {
   return pg.pixels[y * pg.width + x];
 }
 
-void drawZoomedTo(PGraphics targetGraphics, int sourceX, int sourceY) {
-  colorMode(RGB);
-  for (int x = 0; x < targetGraphics.width / zoomScale; x++) {
-    for (int y = 0; y < targetGraphics.height / zoomScale; y++) {
-      color inputColor = inputGraphics.pixels[(sourceY + y) * inputGraphics.width + (sourceX + x)];
-      color outputColor = outputGraphics.pixels[(sourceY + y) * outputGraphics.width + (sourceX + x)];
-
-      for (int outputX = 0; outputX < zoomScale; outputX++) {
-        for (int outputY = 0; outputY < zoomScale; outputY++) {
-          if ((x * zoomScale + outputX) % zoomScale == 0 || (y * zoomScale + outputY) % zoomScale == 0) {
-            targetGraphics.pixels[(y * zoomScale + outputY) * targetGraphics.width + (x * zoomScale + outputX)] = color(255);
-          } else if (outputX > zoomScale * 0.25 && outputX < zoomScale * 0.75 && outputY > zoomScale * 0.25 && outputY < zoomScale * 0.75) {
-            targetGraphics.pixels[(y * zoomScale + outputY) * targetGraphics.width + (x * zoomScale + outputX)] = outputColor;
-          } else {
-            targetGraphics.pixels[(y * zoomScale + outputY) * targetGraphics.width + (x * zoomScale + outputX)] = inputColor;
-          }
-        }
-      }
-    }
-  }
-}
-
 void keyReleased() {
   switch (key) {
     case 'e':
@@ -336,16 +307,6 @@ void keyReleased() {
 
 void mouseReleased() {
   drawContourTo(outputGraphics, mouseX, mouseY);
-
-  Pixel startPixel = getStartPixel(inputGraphics, mouseX, mouseY);
-  if (startPixel != null) {
-    g.loadPixels();
-    zoomGraphics.loadPixels();
-    drawZoomedTo(zoomGraphics, startPixel.x - 3, startPixel.y - 3);
-    zoomGraphics.updatePixels();
-    g.updatePixels();
-    zoomGraphics.updatePixels();
-  }
 }
 
 
