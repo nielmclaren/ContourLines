@@ -36,12 +36,14 @@ void reset() {
   drawContourTo(outputGraphics, seedX, seedY);
 
   Pixel startPixel = getStartPixel(inputGraphics, seedX, seedY);
-  g.loadPixels();
-  zoomGraphics.loadPixels();
-  drawZoomedTo(zoomGraphics, startPixel.x - 3, startPixel.y - 3);
-  zoomGraphics.updatePixels();
-  g.updatePixels();
-  zoomGraphics.updatePixels();
+  if (startPixel != null) {
+    g.loadPixels();
+    zoomGraphics.loadPixels();
+    drawZoomedTo(zoomGraphics, startPixel.x - 3, startPixel.y - 3);
+    zoomGraphics.updatePixels();
+    g.updatePixels();
+    zoomGraphics.updatePixels();
+  }
 }
 
 void draw() {
@@ -55,14 +57,25 @@ void draw() {
 
 void drawInput(PGraphics pg) {
   color c;
-  float noiseScale = 0.02;
-  float offset = 10000 * noiseScale;
+  float noiseScale = 0.006;
+  float offset = random(10000) * noiseScale;
 
   pg.beginDraw();
   pg.loadPixels();
+
   for (int x = 0; x < pg.width; x++) {
     for (int y = 0; y < pg.height; y++) {
-      if (noise(x * noiseScale + offset, y * noiseScale + offset) > 0.5) {
+      pg.pixels[y * pg.width + x] = color(255 * noise(x * noiseScale + offset, y * noiseScale + offset));
+    }
+  }
+
+  FastBlurrer blurrer = new FastBlurrer(imageWidth, imageHeight, 5);
+  blurrer.blur(pg.pixels);
+
+
+  for (int x = 0; x < pg.width; x++) {
+    for (int y = 0; y < pg.height; y++) {
+      if (brightness(pg.pixels[y * pg.width + x]) > 128) {
         c = color(32);
       } else {
         c = color(0);
@@ -70,6 +83,7 @@ void drawInput(PGraphics pg) {
       pg.pixels[y * pg.width + x] = c;
     }
   }
+
   pg.updatePixels();
   pg.endDraw();
 }
@@ -354,12 +368,14 @@ void mouseReleased() {
   drawBezierContourTo(outputGraphics, mouseX, mouseY);
 
   Pixel startPixel = getStartPixel(inputGraphics, mouseX, mouseY);
-  g.loadPixels();
-  zoomGraphics.loadPixels();
-  drawZoomedTo(zoomGraphics, startPixel.x - 3, startPixel.y - 3);
-  zoomGraphics.updatePixels();
-  g.updatePixels();
-  zoomGraphics.updatePixels();
+  if (startPixel != null) {
+    g.loadPixels();
+    zoomGraphics.loadPixels();
+    drawZoomedTo(zoomGraphics, startPixel.x - 3, startPixel.y - 3);
+    zoomGraphics.updatePixels();
+    g.updatePixels();
+    zoomGraphics.updatePixels();
+  }
 }
 
 
