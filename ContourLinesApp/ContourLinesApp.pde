@@ -72,7 +72,6 @@ void drawInput(PGraphics pg) {
   FastBlurrer blurrer = new FastBlurrer(imageWidth, imageHeight, 5);
   blurrer.blur(pg.pixels);
 
-
   for (int x = 0; x < pg.width; x++) {
     for (int y = 0; y < pg.height; y++) {
       if (brightness(pg.pixels[y * pg.width + x]) > 128) {
@@ -104,26 +103,6 @@ void drawContourTo(PGraphics pg, int seedX, int seedY) {
   }
 
   pg.updatePixels();
-  pg.endDraw();
-}
-
-void drawBezierContourTo(PGraphics pg, int seedX, int seedY) {
-  inputGraphics.loadPixels();
-  ArrayList<Pixel> pixels = getContourPixels(inputGraphics, seedX, seedY);
-  if (pixels.size() <= 0) {
-    return;
-  }
-
-  pg.beginDraw();
-
-  int stepSize = 20;
-  Pixel prevPixel = pixels.get(0);
-  for (int i = stepSize; i < pixels.size(); i += stepSize) {
-    Pixel pixel = pixels.get(i);
-    pg.line(prevPixel.x, prevPixel.y, pixel.x, pixel.y);
-    prevPixel = pixel;
-  }
-
   pg.endDraw();
 }
 
@@ -365,7 +344,6 @@ void mouseReleased() {
   outputGraphics.endDraw();
 
   drawContourTo(outputGraphics, mouseX, mouseY);
-  drawBezierContourTo(outputGraphics, mouseX, mouseY);
 
   Pixel startPixel = getStartPixel(inputGraphics, mouseX, mouseY);
   if (startPixel != null) {
