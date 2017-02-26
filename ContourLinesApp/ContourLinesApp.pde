@@ -33,17 +33,6 @@ void reset() {
   outputGraphics.beginDraw();
   outputGraphics.background(0);
   outputGraphics.endDraw();
-  drawContourTo(outputGraphics, seedX, seedY);
-
-  Pixel startPixel = getStartPixel(inputGraphics, seedX, seedY);
-  if (startPixel != null) {
-    g.loadPixels();
-    zoomGraphics.loadPixels();
-    drawZoomedTo(zoomGraphics, startPixel.x - 3, startPixel.y - 3);
-    zoomGraphics.updatePixels();
-    g.updatePixels();
-    zoomGraphics.updatePixels();
-  }
 }
 
 void draw() {
@@ -88,7 +77,7 @@ void drawInput(PGraphics pg) {
 }
 
 void drawContourTo(PGraphics pg, int seedX, int seedY) {
-  color c = color(64);
+  color c = color(0, 128, 0);
 
   inputGraphics.loadPixels();
   ArrayList<Pixel> pixels = getContourPixels(inputGraphics, seedX, seedY);
@@ -115,10 +104,7 @@ ArrayList<Pixel> getContourPixels(PGraphics pg, int seedX, int seedY) {
 
   int dir = 7;
   Pixel pixel = new Pixel(startPixel);
-  println("Add", pixel);
   result.add(startPixel);
-  println("Seed pixel:", seedX, seedY);
-  println("Start pixel:", startPixel);
 
   for (int i = 0; i < 100000; i++) {
     int nextDir = getNextPixelDirection(pg, pixel, dir);
@@ -128,11 +114,9 @@ ArrayList<Pixel> getContourPixels(PGraphics pg, int seedX, int seedY) {
 
     Pixel nextPixel = getPixelInDirection(pixel, nextDir);
     if (result.size() > 2 && nextPixel.equals(result.get(2)) && pixel.equals(result.get(1))) {
-      println("### BREAK ###", result.size());
       break;
     }
 
-    println("Add", nextPixel);
     result.add(nextPixel);
 
     dir = nextDir;
@@ -146,12 +130,10 @@ Pixel getStartPixel(PGraphics pg) {
 }
 
 Pixel getStartPixel(PGraphics pg, int searchStartX, int searchStartY) {
-  println("Search start:", searchStartX, searchStartY);
   int b = floor(brightness(pg.pixels[searchStartY * pg.width + searchStartX]));
   for (int y = searchStartY; y < pg.height; y++) {
     for (int x = searchStartX; x < pg.width; x++) {
       if (floor(brightness(pg.pixels[y * pg.width + x])) != b) {
-        println("Search result:", x, y);
         return new Pixel(x, y);
       }
     }
@@ -337,12 +319,6 @@ void keyReleased() {
 }
 
 void mouseReleased() {
-  outputGraphics.beginDraw();
-  outputGraphics.noFill();
-  outputGraphics.stroke(0, 255, 0);
-  outputGraphics.ellipse(mouseX, mouseY, 5, 5);
-  outputGraphics.endDraw();
-
   drawContourTo(outputGraphics, mouseX, mouseY);
 
   Pixel startPixel = getStartPixel(inputGraphics, mouseX, mouseY);
